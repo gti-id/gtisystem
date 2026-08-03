@@ -161,8 +161,8 @@
 
         function cloudPull() {
             if (!CFG.apiUrl) return Promise.resolve(false);
-            return ambil(CFG.apiUrl + '?action=getAll&t=' + Date.now(), {}, 45)
-                .then(function (r) { return r.json(); })
+            return ambil(CFG.apiUrl + '?action=getAll&t=' + Date.now(), {}, 90)
+                .then(parseBalasan)
                 .then(function (j) {
                     if (j && j.ok) {
                         DB = Object.assign({ barang: [], penjualan: [], pembelian: [], modal: [], kasbank: [], quotation: [], coa: [], jurnal: [], counters: {}, users: [], audit: [], gudang: [], transfer: [], mitra: [], retur: [], opname: [] }, j.data);
@@ -195,13 +195,13 @@
                         lastSyncTime: CFG.lastSyncTime || 0,
                         force: !!force, bolehKosong: IZIN_KOSONGKAN
                     })
-                }, 60);
+                }, 180);
             } catch (e) {
                 console.error('cloudPush gagal memulai request:', e);
                 toast('URL Spreadsheet tidak valid: ' + e.message, 'err');
                 return Promise.resolve(false);
             }
-            return req.then(function (r) { return r.json(); })
+            return req.then(parseBalasan)
                 .then(function (j) {
                     if (j && j.error === 'CONFLICT') {
                         // Perubahan di layar TIDAK langsung dibuang — pengguna yang memilih.
@@ -234,6 +234,10 @@
                 })
                 .catch(function (e) {
                     console.error('cloudPush:', e);
+                    var pesan = (e && e.name === 'AbortError')
+                        ? 'waktu habis 3 menit — data terlalu besar atau koneksi lambat'
+                        : (e && e.message ? e.message : e);
+                    toast('Gagal menyimpan: ' + pesan, 'err');
                     return false;
                 });
         }
@@ -5211,8 +5215,8 @@
             openModal('<div class="modal-head"><h3>Diagnosa Spreadsheet</h3>' +
                 '<button class="x" onclick="closeModal()">&times;</button></div>' +
                 '<div class="modal-body"><div class="loading-box">🩺 Membaca kondisi sheet…</div></div>');
-            ambil(CFG.apiUrl + '?action=diag&t=' + Date.now(), {}, 30)
-                .then(function (r) { return r.json(); })
+            ambil(CFG.apiUrl + '?action=diag&t=' + Date.now(), {}, 45)
+                .then(parseBalasan)
                 .then(function (j) {
                     if (!j || !j.ok) throw new Error((j && j.error) || 'Respons tidak dikenali');
                     tampilDiagnosa(j.sheets || []);
@@ -5905,6 +5909,23 @@
 
         /* Ambil daftar pengguna saja — jauh lebih ringan daripada getAll,
            jadi layar login bisa dipakai dalam hitungan detik. */
+        /* Balasan Apps Script HARUS JSON. Kalau yang datang halaman HTML
+           (diawali '<'), berarti URL Web App salah, deployment versi lama,
+           atau akses ditolak — beri pesan yang menyebut itu, bukan
+           "Unexpected token '<'". */
+        function parseBalasan(r) {
+            return r.text().then(function (t) {
+                var s = String(t || '').trim();
+                if (s.charAt(0) === '<') {
+                    throw new Error('Server membalas halaman HTML, bukan data. ' +
+                        'Biasanya: URL Web App salah / deployment versi lama / akses bukan "Anyone". ' +
+                        'Deploy ulang Code.gs sebagai versi baru lalu periksa URL di Pengaturan.');
+                }
+                try { return JSON.parse(s); }
+                catch (e) { throw new Error('Balasan server tidak terbaca sebagai JSON'); }
+            });
+        }
+
         /* fetch dengan batas waktu — supaya tidak menggantung tanpa ujung
            kalau URL salah atau jaringan tidak menjawab. */
         var ALASAN_GAGAL = '';
@@ -5929,8 +5950,8 @@
         function tarikUsers() {
             ALASAN_GAGAL = '';
             if (!CFG.apiUrl) { ALASAN_GAGAL = 'URL Web App belum diisi'; return Promise.resolve(false); }
-            return ambil(CFG.apiUrl + '?action=getUsers&t=' + Date.now(), {}, 20)
-                .then(function (r) { return r.json(); })
+            return ambil(CFG.apiUrl + '?action=getUsers&t=' + Date.now(), {}, 30)
+                .then(parseBalasan)
                 .then(function (j) {
                     if (!j || !j.ok) { ALASAN_GAGAL = (j && j.error) ? String(j.error) : 'respons tidak dikenali'; return false; }
                     if (!Array.isArray(j.users)) { ALASAN_GAGAL = 'daftar pengguna tidak terbaca'; return false; }
