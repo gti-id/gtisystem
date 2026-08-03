@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1e40af">
+    <title>Aplikasi Penjualan, Pembelian & Stok</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app">
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="brand">
+                <div class="brand-mark" id="brandMark">GT</div>
+                <div class="brand-txt">
+                    <h1 id="sideCo">CV. Contoh Jaya</h1>
+                    <small>Sistem Penjualan &amp; Akuntansi</small>
+                </div>
+                <button class="side-close" id="sideClose" title="Tutup menu">&times;</button>
+            </div>
+
+            <div class="side-user" id="sideUser"></div>
+
+            <!-- Menu dibangun oleh script.js dari daftar MENUS + hak akses user -->
+            <nav class="nav" id="nav"></nav>
+
+            <div class="side-foot">
+                <div class="sync-row"><span class="sync-dot" id="syncDot"></span><span id="syncTxt">Mode Lokal</span></div>
+                <div class="ver">v3.0 &middot; Penjualan + Akuntansi</div>
+                <button class="btn btn-danger btn-sm side-logout" onclick="doLogout()" title="Keluar">🚪<span>&nbsp;Keluar</span></button>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="tutupSidebar()"></div>
+
+        <!-- ===== KONTEN ===== -->
+        <div class="content">
+            <header class="topbar">
+                <button class="icon-btn" id="btnMenu" title="Sembunyikan / tampilkan menu"
+                        aria-label="Sembunyikan atau tampilkan menu" onclick="toggleSidebar()">☰</button>
+                <div class="crumb" id="crumb">Dashboard</div>
+                <div class="topbar-right">
+                    <span class="sync-chip" id="syncChip" title="Status sinkronisasi"><span class="sync-dot" id="syncDot2"></span><span id="syncTxt2">Lokal</span></span>
+                    <button class="icon-btn" title="Segarkan data" onclick="doPull()">⟳</button>
+                    <button class="user-chip" id="userChip" onclick="bukaProfil()" title="Profil &amp; ganti password">
+                        <span class="ava" id="userAva">?</span>
+                        <span class="txt"><span class="nm" id="userNama">—</span><span class="rl" id="userRole"></span></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Tab halaman yang terbuka -->
+            <div class="tabbar" id="tabbar"></div>
+
+            <main class="main" id="main"></main>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <div class="modal" id="modal"></div>
+    </div>
+    <div id="printArea"></div>
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== LOGIN ===== -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-box">
+            <div class="login-logo" id="loginLogo">🔐</div>
+            <h2 id="loginCo">Masuk ke Sistem</h2>
+            <p class="login-sub">Masukkan username dan password Anda</p>
+            <div class="field">
+                <label for="loginUsername">Username</label>
+                <input type="text" id="loginUsername" placeholder="admin" autocomplete="username">
+            </div>
+            <div class="field">
+                <label for="loginPassword">Password</label>
+                <div class="input-wrap">
+                    <input type="password" id="loginPassword" placeholder="••••••" autocomplete="current-password">
+                    <button type="button" class="eye-btn" id="eyeBtn" onclick="togglePassword()"
+                            title="Lihat password" aria-label="Lihat password">👁️</button>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-block" id="btnMasuk" onclick="doLogin()">Masuk</button>
+            <button class="btn btn-ghost btn-block" id="btnUlangKoneksi" onclick="ulangKoneksi()"
+                    style="display:none;margin-top:8px">🔄 Coba Hubungkan Lagi</button>
+            <p id="loginError" class="login-err">Username atau password salah!</p>
+            <p class="login-note">Hak akses menu diatur oleh Admin pada menu <b>Pengguna &amp; Hak Akses</b></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
